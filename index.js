@@ -4,15 +4,17 @@ import axios from 'axios'
 
 const uploadImages = (uploadArray) => {
     return new Promise(resolve => {
+        let isImagesUploaded = []
         for (let i = 0; i < uploadArray.length; i++) {
-            axios.get(uploadArray[i].file.uri, {responseType: 'blob'})
+            isImagesUploaded.push(axios.get(uploadArray[i].file.uri, {responseType: 'blob'})
                 .then(response => {
                     uploadArray[i].file.uri = response.data
                     uploadUsingPresignedUrl(uploadArray[i].preSignedUrl, uploadArray[i].file);
-                })
+                    return uploadArray[i].file.uri
+                }))
         }
+        Promise.all(isImagesUploaded).then(res => resolve(res))
     })
-    
 }
 
 const uploadUsingPresignedUrl = (preSignedUrl, file) => {
